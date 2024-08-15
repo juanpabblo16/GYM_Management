@@ -3,7 +3,7 @@ package com.icesi.edu.co.controller;
 import com.icesi.edu.co.service.ClassService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.icesi.edu.co.model.Class
+import com.icesi.edu.co.model.Class;
 
 import java.util.List;
 
