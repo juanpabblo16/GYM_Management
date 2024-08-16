@@ -13,13 +13,13 @@ public class ClassController {
     @Autowired
     private ClassService gymService;
 
-    @PostMapping("/clases")
-    public Class programarClase(@RequestBody Class clase) {
-        return gymService.programClass(clase);
+    @PostMapping("/class")
+    public Class programClass(@RequestBody Class cl) {
+        return gymService.programClass(cl);
     }
 
-    @GetMapping("/clases")
-    public List<Class> obtenerTodasClases() {
+    @GetMapping("/class")
+    public List<Class> getAllClass() {
         return gymService.getAllClass();
     }
 

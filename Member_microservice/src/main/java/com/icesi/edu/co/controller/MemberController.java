@@ -9,21 +9,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/members")
+@RequestMapping("/api/gym")
 public class MemberController {
 
     @Autowired
     private MemberService memberService;
 
     // Endpoint para registrar un nuevo miembro
-    @PostMapping("/register")
+    @PostMapping("/member")
     public ResponseEntity<Member> registerMember(@RequestBody Member member) {
         Member savedMember = memberService.registerMember(member);
         return ResponseEntity.ok(savedMember);
     }
 
     // Endpoint para obtener todos los miembros
-    @GetMapping("/all")
+    @GetMapping("/member")
     public ResponseEntity<List<Member>> getAllMembers() {
         List<Member> members = memberService.getAllMembers();
         return ResponseEntity.ok(members);
