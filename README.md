@@ -34,6 +34,39 @@ This project is a gym management system designed using a microservices architect
      - `POST /team`: Create a new team.
      - `GET /team`: Retrieve all teams.
 
+## Keycloak Configuration
+
+1. **Create a Realm:** Set up a new Realm in Keycloak for your application.
+2. **Create Clients:**
+    - Go to the "Clients" section and create a new client named `Team-services`.
+    - Configure the following parameters:
+      - `Client ID`: `Team-services`
+      - `Client Protocol`: `openid-connect`
+      - `Access Type`: `confidential`
+    - Ensure the following authentication flows are enabled:
+      - `Standard Flow Enabled`: `true`
+      - `Direct Access Grants Enabled`: `true`
+    - Add the `Redirect URIs`:
+      - `http://localhost:8080/*`
+      - `http://localhost:8084/*`
+3. **Create Roles:**
+    - Create roles for your application: `ROLE_MEMBER`, `ROLE_TRAINER`, `ROLE_ADMIN`.
+4. **Create Users:**
+    - Create users in Keycloak and assign the corresponding roles.
+
+Authentication using postman
+![](/imgs/Captura%20de%20pantalla%202024-09-10%20020826.png)
+![](/imgs/teams.png)
+## API Documentation with Swagger
+
+Swagger is integrated to provide an interactive user interface for API documentation. To access the Swagger documentation:
+
+- Ensure the application is running.
+- Navigate to: `http://localhost:8080/swagger-ui.html` or `http://localhost:8084/swagger-ui.html`
+
+Team-microservices example
+![](/imgs/swagerteam.png)
+
 ## Implementation Steps
 
 1. **Defining Requirements**
