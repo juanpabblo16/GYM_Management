@@ -6,17 +6,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
-public class Member {
-
+public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String name;
-
-    private String email;
-
-    private String registrationDate;
+    private String memberName;
+    private BigDecimal amount;
+    private String status; // e.g., PENDING, SUCCESS, FAILED
 }
