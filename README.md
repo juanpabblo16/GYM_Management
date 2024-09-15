@@ -57,6 +57,7 @@ This project is a gym management system designed using a microservices architect
 Authentication using postman
 ![](/imgs/Captura%20de%20pantalla%202024-09-10%20020826.png)
 ![](/imgs/teams.png)
+
 ## API Documentation with Swagger
 
 Swagger is integrated to provide an interactive user interface for API documentation. To access the Swagger documentation:
@@ -89,6 +90,198 @@ Link:[https://drive.google.com/file/d/1oIcTH7_EvVnRKV65AhUcJzeUh7r7hcnS/view?usp
 5. **Documentation and Deployment**
    - Preparation of project documentation.
    - Local deployment of the microservices.
+  
+Aquí tienes una sección de README que describe cómo se implementó RabbitMQ en el proyecto:
+
+* * *
+
+🐇 RabbitMQ Implementation
+--------------------------
+
+En este proyecto, hemos implementado RabbitMQ como middleware de mensajería para manejar diferentes patrones de comunicación entre microservicios. A continuación, se describe cómo se implementaron las principales funcionalidades de RabbitMQ, incluyendo el sistema de notificaciones para nuevas inscripciones, el patrón publish/subscribe para cambios en los horarios de clases y el manejo de la Dead Letter Queue (DLQ) para los pagos fallidos.
+
+### Tabla de Contenidos
+
+1.  [Instalación de RabbitMQ](#instalaci%C3%B3n-de-rabbitmq)
+2.  [Configuración General](#configuraci%C3%B3n-general)
+3.  [Sistema de Notificaciones para Nuevas Inscripciones](#sistema-de-notificaciones-para-nuevas-inscripciones)
+4.  [Patrón Publish/Subscribe para Horarios de Clases](#patr%C3%B3n-publishsubscribe-para-horarios-de-clases)
+5.  [Dead Letter Queue (DLQ) para Pagos Fallidos](#dead-letter-queue-dlq-para-pagos-fallidos)
+
+* * *
+
+### Instalación de RabbitMQ
+
+Para comenzar, asegúrate de que RabbitMQ esté instalado y funcionando localmente o en un servidor. Si aún no lo tienes instalado, puedes hacerlo ejecutando el siguiente comando:
+
+```bash
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+
+Una vez iniciado el contenedor, puedes acceder al panel de administración de RabbitMQ en `http://localhost:15672` con las credenciales por defecto:
+
+*   Usuario: `guest`
+*   Contraseña: `guest`
+
+* * *
+
+### Configuración General
+
+Cada uno de nuestros microservicios incluye una configuración específica para conectar y utilizar RabbitMQ. A continuación se muestra la configuración básica que se repite en la mayoría de los microservicios.
+
+#### Dependencia de Maven
+
+Primero, asegúrate de incluir la siguiente dependencia de RabbitMQ en el `pom.xml` de cada microservicio:
+
+```xml
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-amqp</artifactId>
+</dependency>
+```
+
+#### Configuración en `application.properties`
+
+Cada microservicio debe incluir la configuración para RabbitMQ en el archivo `application.properties`:
+
+```properties
+# RabbitMQ configuration
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=guest
+spring.rabbitmq.password=guest
+```
+
+#### Configuración de RabbitMQ en el código
+
+En cada microservicio hemos creado una clase de configuración `RabbitMQConfig.java` para definir los intercambios, colas y bindings.
+
+* * *
+
+### Sistema de Notificaciones para Nuevas Inscripciones
+
+El sistema de notificaciones para nuevas inscripciones se implementa utilizando un patrón de cola simple en el microservicio de **Members**. Cada vez que un nuevo miembro se registra, se publica un mensaje en una cola de RabbitMQ, que posteriormente es consumido por un servicio que envía una notificación.
+
+#### Publicador de mensajes
+
+Cuando un nuevo miembro se inscribe, el siguiente código publica una notificación:
+
+```java
+
+@Autowired
+private RabbitTemplate rabbitTemplate;
+
+public void notifyNewMember
+(Member member) {
+    rabbitTemplate.convertAndSend("member-notifications-exchange", "", "Nuevo miembro registrado: " + member.getName());
+}
+```
+
+#### Consumidor de mensajes
+
+El servicio que escucha las nuevas inscripciones y procesa la notificación:
+
+```java
+
+@RabbitListener(queues = "member-notifications-queue")
+public void receiveNewMemberNotification
+(String message) {
+    System.out.println("Notificación recibida: " + message);
+}
+```
+
+* * *
+
+### Patrón Publish/Subscribe para Horarios de Clases
+
+Para implementar un patrón **publish/subscribe** en el microservicio de **Classes**, utilizamos un `FanoutExchange`. Este tipo de intercambio distribuye mensajes a todas las colas enlazadas a dicho exchange, lo que nos permite notificar a múltiples consumidores cada vez que hay un cambio en los horarios de clases.
+
+#### Configuración del intercambio `FanoutExchange`
+
+```java
+
+@Bean
+public FanoutExchange scheduleChangeExchange
+() {
+    return new FanoutExchange("schedule-change-exchange");
+}
+```
+
+#### Publicación de cambios de horario
+
+Cada vez que se programa una nueva clase o se modifica un horario, se publica un mensaje de notificación:
+
+```java
+
+public void notifyScheduleChange
+(String classDetails) {
+    rabbitTemplate.convertAndSend("schedule-change-exchange", "", "Cambio de horario: " + classDetails);
+}
+```
+
+#### Consumidor de mensajes de horarios
+
+Un consumidor suscrito a los cambios de horario:
+
+```java
+
+@RabbitListener(queues = "schedule-change-queue")
+public void handleScheduleChange
+(String message) {
+    System.out.println("Notificación de cambio de horario: " + message);
+}
+```
+
+* * *
+
+### Dead Letter Queue (DLQ) para Pagos Fallidos
+
+Para manejar pagos fallidos, hemos configurado una **Dead Letter Queue (DLQ)** en el microservicio de **Payments**. La DLQ recibe mensajes que no pudieron procesarse correctamente después de un número específico de intentos.
+
+#### Configuración de la cola principal y DLQ
+
+```java
+
+@Bean
+public Queue paymentQueue
+() {
+    return QueueBuilder.durable("pagos-queue")
+            .withArgument("x-dead-letter-exchange", "dlx-exchange")
+            .withArgument("x-dead-letter-routing-key", "dlx-routing-key")
+            .build();
+}
+
+@Bean
+public Queue deadLetterQueue
+() {
+    return new Queue("pagos-dlq");
+}
+```
+
+#### Consumidor de la cola de pagos fallidos
+
+```java
+
+@RabbitListener(queues = "pagos-dlq")
+public void processFailedPayments
+(String failedMessage) {
+    System.out.println("Procesando pago fallido: " + failedMessage);
+    // Lógica adicional para manejar errores de pago
+}
+```
+
+### Resumen
+
+En este proyecto, RabbitMQ es utilizado para implementar una arquitectura de mensajería que soporta:
+
+*   **Notificaciones** para nuevas inscripciones de miembros.
+*   **Publish/Subscribe** para notificaciones de cambios en los horarios de clases.
+*   **Dead Letter Queues (DLQ)** para manejar errores en el procesamiento de pagos fallidos.
+
+Cada microservicio está configurado con su propia cola y lógica para publicar o suscribirse a eventos relevantes, asegurando un sistema distribuido robusto y escalable.
+
+* * *
 
 ## How to Run the Project
 
