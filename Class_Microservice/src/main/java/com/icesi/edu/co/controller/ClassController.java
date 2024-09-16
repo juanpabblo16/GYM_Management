@@ -7,8 +7,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.icesi.edu.co.model.Class;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -19,7 +20,7 @@ public class ClassController {
     private ClassService gymService;
 
     @PostMapping("/class")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN', 'ROLE_TRAINER')")
     @Operation(
             summary = "Programar una nueva clase",
             description = "Permite a un entrenador programar una nueva clase en el sistema."
@@ -29,7 +30,7 @@ public class ClassController {
     }
 
     @GetMapping("/class")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN', 'ROLE_TRAINER', 'ROLE_MEMBER')")
     @Operation(
             summary = "Obtener todas las clases",
             description = "Recupera una lista de todas las clases programadas en el gimnasio."
@@ -37,4 +38,5 @@ public class ClassController {
     public List<Class> getAllClass() {
         return gymService.getAllClass();
     }
+
 }

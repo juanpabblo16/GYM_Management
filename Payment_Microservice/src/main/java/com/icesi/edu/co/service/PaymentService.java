@@ -5,6 +5,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.icesi.edu.co.model.Payment;
+
 @Service
 public class PaymentService {
 
@@ -12,15 +14,12 @@ public class PaymentService {
     private AmqpTemplate amqpTemplate;
 
     @RabbitListener(queues = "payment-queue")
-    public void handlePayment(String paymentMessage) {
+    public void handlePayment(Payment payment) {
         try {
-            // Aquí procesas el pago
-            System.out.println("Processing payment: " + paymentMessage);
-            // Simulando un error en el procesamiento
+            System.out.println("Processing payment: " + payment);
             throw new RuntimeException("Payment processing error");
         } catch (Exception e) {
-            // Enviar el mensaje a la DLQ si hay un error
-            amqpTemplate.convertAndSend("payment-dlx", "payment-dlq-routing-key", paymentMessage);
+            amqpTemplate.convertAndSend("payment-dlx", "payment-dlq-routing-key", payment);
         }
     }
 }

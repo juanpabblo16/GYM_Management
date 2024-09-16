@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  trainer_microservice:
+    build:
+      context: ./Trainer_microservice
+      dockerfile: Dockerfile
+    ports:
+      - "${Trainer_Microservice_PORT}:${Trainer_Microservice_PORT}"
+    environment:
+      - PORT=${Trainer_Microservice_PORT}
+
+
+  member_microservice:
+    build:
+      context: ./Member_microservice
+      dockerfile: Dockerfile
+    ports:
+      - "${Member_Microservice_PORT}:${Member_Microservice_PORT}"
+    environment:
+      - PORT=${Member_Microservice_PORT}
+
+
+
+
+  team_microservice:
+    build:
+      context: ./Team_microservice
+      dockerfile: Dockerfile
+    ports:
+      - "${Team_Microservice_PORT}:${Team_Microservice_PORT}"
+    environment:
+      - PORT=${Team_Microservice_PORT}
+
+
+  class_microservice:
+    build:
+      context: ./Class_Microservice
+      dockerfile: Dockerfile
+    ports:
+      - "${Class_Microservice_PORT}:${Class_Microservice_PORT}"
+    environment:
+      - PORT=${Class_Microservice_PORT}
+    depends_on:
+      - trainer_microservice
+
+
+networks:
+  default:
+    driver: bridge

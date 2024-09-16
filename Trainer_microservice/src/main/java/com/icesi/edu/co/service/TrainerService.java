@@ -20,4 +20,8 @@ public class TrainerService {
     public List<Trainer> getAllTrainers() {
         return trainerRepository.findAll();
     }
+
+    public Boolean getTrainerById(Long id) {
+        return trainerRepository.existsById(id);
+    }
 }
