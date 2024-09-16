@@ -1,44 +1,35 @@
 package com.icesi.edu.co.config;
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableRabbit
 public class PaymentRabbitConfig {
 
-    @Bean
-    public Exchange paymentExchange() {
-        return ExchangeBuilder.directExchange("payment-exchange").durable(true).build();
-    }
+    public static final String PAYMENTS_QUEUE = "payments-queue";
+    public static final String PAYMENTS_DLQ = "payments-dlq";
 
     @Bean
-    public Queue paymentQueue() {
-        return QueueBuilder.durable("payment-queue")
-                .withArgument("x-dead-letter-exchange", "payment-dlx")
-                .withArgument("x-dead-letter-routing-key", "payment-dlq-routing-key")
+    public Queue paymentsQueue() {
+        return QueueBuilder.durable(PAYMENTS_QUEUE)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", PAYMENTS_DLQ)
                 .build();
     }
 
     @Bean
-    public Binding paymentQueueBinding() {
-        return BindingBuilder.bind(paymentQueue()).to(paymentExchange()).with("payment-routing-key").noargs();
+    public Queue paymentsDeadLetterQueue() {
+        return QueueBuilder.durable(PAYMENTS_DLQ).build();
     }
 
     @Bean
-    public Exchange paymentDLXExchange() {
-        return ExchangeBuilder.directExchange("payment-dlx").durable(true).build();
+    public DirectExchange paymentsExchange() {
+        return new DirectExchange("payments-exchange");
     }
 
     @Bean
-    public Queue paymentDLQ() {
-        return QueueBuilder.durable("payment-dlq").build();
-    }
-
-    @Bean
-    public Binding paymentDLQBinding() {
-        return BindingBuilder.bind(paymentDLQ()).to(paymentDLXExchange()).with("payment-dlq-routing-key").noargs();
+    public Binding paymentsBinding(Queue paymentsQueue, DirectExchange paymentsExchange) {
+        return BindingBuilder.bind(paymentsQueue).to(paymentsExchange).with("payment.routing.key");
     }
 }
