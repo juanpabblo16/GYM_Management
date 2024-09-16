@@ -19,19 +19,19 @@ public class TeamController {
     private TeamService teamService;
 
     @PostMapping("/team")
-    @PreAuthorize("hasRole('ROLE_TRAINER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_TRAINER', 'ROLE_ADMIN')")
     @Operation(
             summary = "Añadir un nuevo equipo",
             description = "Este endpoint permite añadir un nuevo equipo al gimnasio."
     )
     public Team addTeam(
             @Parameter(description = "El equipo que se va a añadir", required = true)
-            @RequestBody Team team) {
+            @RequestBody Team team) {   
         return teamService.addTeam(team);
     }
 
     @GetMapping("/team")
-    @PreAuthorize("hasRole('ROLE_TRAINER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_TRAINER', 'ROLE_ADMIN')")
     @Operation(
             summary = "Obtener todos los equipos",
             description = "Este endpoint permite obtener una lista de todos los equipos registrados en el sistema."

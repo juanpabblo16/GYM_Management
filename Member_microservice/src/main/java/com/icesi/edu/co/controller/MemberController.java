@@ -18,24 +18,23 @@ public class MemberController {
     private MemberService memberService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_TRAINER', 'ROLE_ADMIN')")
-    @Operation(
-            summary = "Add a new member",
-            description = "This endpoint allows adding a new member to the system."
-    )
+    @PreAuthorize("hasAnyRole('ROLE_TRAINER', 'ROLE_ADMIN')")
+    @Operation(summary = "Add a new member", description = "This endpoint allows adding a new member to the system.")
     public Member addMember(
-            @Parameter(description = "The member to be added", required = true)
-            @RequestBody Member member) {
+            @Parameter(description = "The member to be added", required = true) @RequestBody Member member) {
         return memberService.addMember(member);
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN', 'ROLE_TRAINER')")
-    @Operation(
-            summary = "Get all members",
-            description = "This endpoint allows retrieving all registered members."
-    )
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TRAINER')")
+    @Operation(summary = "Get all members", description = "This endpoint allows retrieving all registered members.")
     public List<Member> getAllMembers() {
         return memberService.getAllMembers();
+    }
+
+    @GetMapping("/exist/{id}")
+    @Operation(summary = "Get a member by ID", description = "This endpoint allows retrieving a member by its ID.")
+    public Boolean existsMember(@Parameter(description = "The ID of the member to be retrieved", required = true) @PathVariable Long id) {
+        return memberService.existsMember(id);
     }
 }

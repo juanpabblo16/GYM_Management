@@ -5,6 +5,8 @@ import com.icesi.edu.co.service.ClassService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import com.icesi.edu.co.dto.ReservationDTO;
 import com.icesi.edu.co.model.Class;
 import io.swagger.v3.oas.annotations.Operation;
 
@@ -20,7 +22,7 @@ public class ClassController {
     private ClassService gymService;
 
     @PostMapping("/class")
-    @PreAuthorize("hasRole('ROLE_ADMIN', 'ROLE_TRAINER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TRAINER')")
     @Operation(
             summary = "Programar una nueva clase",
             description = "Permite a un entrenador programar una nueva clase en el sistema."
@@ -30,7 +32,7 @@ public class ClassController {
     }
 
     @GetMapping("/class")
-    @PreAuthorize("hasRole('ROLE_ADMIN', 'ROLE_TRAINER', 'ROLE_MEMBER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TRAINER', 'ROLE_MEMBER')")
     @Operation(
             summary = "Obtener todas las clases",
             description = "Recupera una lista de todas las clases programadas en el gimnasio."
@@ -39,4 +41,13 @@ public class ClassController {
         return gymService.getAllClass();
     }
 
+    @GetMapping("/class/reservation")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TRAINER', 'ROLE_MEMBER')")
+    @Operation(
+            summary = "Reservar una clase por su id",
+            description = "Reservar una clase programada en el gimnasio por su id."
+    )
+    public Class reserveClass(@RequestBody ReservationDTO reservationDTO) {
+        return gymService.reserveClass(reservationDTO);
+    }
 }

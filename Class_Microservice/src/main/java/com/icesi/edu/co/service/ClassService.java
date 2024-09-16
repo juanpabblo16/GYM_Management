@@ -2,10 +2,12 @@ package com.icesi.edu.co.service;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.icesi.edu.co.dto.ReservationDTO;
 import com.icesi.edu.co.model.Class;
 import com.icesi.edu.co.repository.ClassRepository;
 
@@ -35,7 +37,8 @@ public class ClassService {
 
     public Class updateClass(Class updatedClass) {
         Class savedClass = classRepository.save(updatedClass);
-        rabbitTemplate.convertAndSend("notification-exchange", "", "Horario de clase actualizado: " + savedClass.getName());
+        rabbitTemplate.convertAndSend("notification-exchange", "",
+                "Horario de clase actualizado: " + savedClass.getName());
         return savedClass;
     }
 
@@ -45,8 +48,8 @@ public class ClassService {
 
     public Class programClass(Class cl) {
         Boolean trainerAvalaible = restTemplate.getForObject(
-            "http://localhost:8081/api/gym/trainer/" + cl.getIdTrainer().getIdTrainer() , Boolean.class);
-        
+                "http://localhost:8081/api/gym/trainer/" + cl.getIdTrainer().getIdTrainer(), Boolean.class);
+
         if (!trainerAvalaible) {
             throw new RuntimeException("El entrenador no existe o no está disponible");
         }
@@ -57,8 +60,17 @@ public class ClassService {
         return savedClass;
     }
 
-    public Class reserveClass(Long idClass) {
-        Optional<Class> optionalClass = classRepository.findById(idClass);
+    public Class reserveClass(ReservationDTO reservationDTO) {
+
+        Optional<Class> optionalClass = classRepository.findById(reservationDTO.getClassId());
+
+        Boolean trainerAvalaible = restTemplate.getForObject(
+                "http://localhost:8082/api/members/exist/" + reservationDTO.getMemberId(), Boolean.class);
+
+        if (!trainerAvalaible) {
+            throw new RuntimeException("El miembro no existe o no está disponible");
+        }
+
         if (!optionalClass.isPresent()) {
             throw new RuntimeException("La clase no existe");
         }
@@ -71,9 +83,16 @@ public class ClassService {
         cl.setCurrentCapacity(cl.getCurrentCapacity() + 1);
         Class savedClass = classRepository.save(cl);
 
-        String message = "Reserva de clase exitosa: " + savedClass.getName() + " - " + LocalDate.now() ;
+        String message = "Reserva de clase exitosa: " + savedClass.getName() + " - " + LocalDate.now();
         kafkaTemplate.send("ocupacion-clases", message);
         return savedClass;
+
     }
 
+    @KafkaListener(topics = "ocupacion-clases", groupId = "monitoreo-grupo")
+    public void consumirActualizacionOcupacion(String ocupacion) {
+        System.out.println("Mensaje recibido: " + ocupacion);
+    }
+
+    
 }

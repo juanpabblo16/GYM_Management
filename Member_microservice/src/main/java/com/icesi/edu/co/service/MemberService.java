@@ -26,4 +26,8 @@ public class MemberService {
     public List<Member> getAllMembers() {
         return memberRepository.findAll();
     }
+
+    public Boolean existsMember(Long id) {
+        return memberRepository.existsById(id);
+    }
 }
