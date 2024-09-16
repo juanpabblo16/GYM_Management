@@ -17,7 +17,7 @@ public class PaymentController {
 
     @PostMapping
     public ResponseEntity<Payment> processPayment(@RequestBody Payment payment) {
-        paymentService.handlePayment(payment);
+        paymentService.handlePayment(String.valueOf(payment));
         return ResponseEntity.ok(payment);
     }
 
