@@ -76,7 +76,7 @@ Team-microservices example
 
 2. **Architecture Design**
    - Creation of an architecture diagram illustrating the relationship between microservices and their databases.
-   ![Component Diagram](Gym_Managment-Page-1.jpg)
+   ![Component Diagram](imgs/Gym_Managment-Page-1.drawio.png)
 
 Link:[https://drive.google.com/file/d/1oIcTH7_EvVnRKV65AhUcJzeUh7r7hcnS/view?usp=sharing]
 3. **Microservice Implementation**

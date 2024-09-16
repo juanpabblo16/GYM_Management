@@ -2,7 +2,6 @@ package com.icesi.edu.co.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -18,6 +17,8 @@ public class Class {
 
     private int maximumCapacity;
 
+    // Establecer el valor predeterminado como 0
+    @Column(nullable = false, columnDefinition = "int default 0")
     private int currentCapacity;
 
     @Embedded

@@ -1,0 +1,6 @@
+2024-08-15 14:58:37.435471-05:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "MEMBER" not found (this database is empty); SQL statement:
+insert into member (email,inscription_date,name,id) values (?,?,?,default) [42104-224]
+2024-08-15 14:59:39.905191-05:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "MEMBER" not found (this database is empty); SQL statement:
+insert into member (email,inscription_date,name,id) values (?,?,?,default) [42104-224]
